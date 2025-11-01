@@ -24,38 +24,46 @@ A comprehensive gym management web application built with PHP, MySQL, and modern
 ## 📁 Project Structure
 ```plaintext
 FUN-FITNESS/
-├── HOME.PHP # Main dashboard page
-├── index.php # Landing/Home page
-├── login.php # Authentication page
-├── assets/
-│ ├── CSS/ # Stylesheets
-│ │ ├── bootstrap.css
-│ │ ├── dash.css
-│ │ ├── index.css
-│ │ └── login.css
-│ ├── JS/ # JavaScript files
-│ │ ├── bootstrap.js
-│ │ └── login.js
-│ ├── IMAGES/ # Media assets
-│ │ ├── bg-index.jpg
-│ │ ├── bg-login.jpg
-│ │ ├── fast-fitness.png
-│ │ ├── funfitness.png
-│ │ └── [other images]
-│ ├── fonts/ # Font files
-│ │ └── Montserrat/
-│ └── include/ # Configuration
-│ ├── config.php
-│ └── script.php
+├── HOME.php                # Main dashboard page
+├── index.php               # Landing / Home page
+├── login.php               # Authentication page
+│
+├── assets/                 # Static resources
+│   ├── CSS/                # Stylesheets
+│   │   ├── bootstrap.css
+│   │   ├── dash.css
+│   │   ├── index.css
+│   │   └── login.css
+│   │
+│   ├── JS/                 # JavaScript files
+│   │   ├── bootstrap.js
+│   │   └── login.js
+│   │
+│   ├── IMAGES/             # Media assets
+│   │   ├── bg-index.jpg
+│   │   ├── bg-login.jpg
+│   │   ├── fast-fitness.png
+│   │   ├── funfitness.png
+│   │   └── [other images]
+│   │
+│   ├── fonts/              # Font files
+│   │   └── Montserrat/
+│   │
+│   └── include/            # Configuration / Includes
+│       ├── config.php
+│       └── script.php
+│
 ├── database/
-│ └── fun_fitness.sql # Database schema
-└── pages/
-├── classes.php # Class management
-├── dashboard.php # Admin dashboard
-├── members.php # Member management
-├── memberships.php # Membership plans
-├── save_class.php # Class creation/editing
-└── staff.php # Staff management
+│   └── fun_fitness.sql     # Database schema
+│
+└── pages/                  # App subpages
+    ├── classes.php         # Class management
+    ├── dashboard.php       # Admin dashboard
+    ├── members.php         # Member management
+    ├── memberships.php     # Membership plans
+    ├── save_class.php      # Class creation/editing
+    └── staff.php           # Staff management
+
 ```
 text
 
@@ -132,3 +140,4 @@ For issues and questions:
 
 
 *Built with PHP, MySQL, jQuery, Bootstrap for the fitness community*
+
