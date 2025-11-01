@@ -1,0 +1,20 @@
+# Laragon and environment files
+/.qodo/
+/laragon/
+/.env
+/config.php
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Database dumps (keep structure only)
+/database/*.sql
+!/database/structure.sql
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
