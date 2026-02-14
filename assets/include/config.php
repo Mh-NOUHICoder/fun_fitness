@@ -1,8 +1,9 @@
 <?php
-$host = "localhost"; 
-$dbname = "fun_fitness"; 
-$username = "root"; 
-$password = ""; 
+// method1
+$host = "sql313.infinityfree.com";
+$dbname = "if0_41153285_fastfit";
+$username = "if0_41153285";
+$password = "LuKHuCCTUu";
 $con = mysqli_connect($host, $username, $password, $dbname);
 try {
   $con = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -13,10 +14,10 @@ try {
 
 // method2
 
-$nom_serveur = "localhost";
-    $nom_utilisateur = "root";
-    $pw = "";
-    $nom_db = "fun_fitness"; 
+$nom_serveur = "sql313.infinityfree.com";
+    $nom_utilisateur = "if0_41153285";
+    $pw = "LuKHuCCTUu";
+    $nom_db = "if0_41153285_fastfit"; 
     $dsn = "mysql:host=$nom_serveur;dbname=$nom_db";
 
     try {

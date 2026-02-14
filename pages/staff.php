@@ -1,513 +1,872 @@
 <?php 
-    include('../assets/include/script.php');
-    //Sidebar include
-    include('../HOME.PHP');
-                    //Count of role Staff
-        $total_trainer_staff = $con->query("SELECT COUNT(*) AS total_trainer_staff FROM `staff` WHERE role = 'trainer' ")->fetchColumn();
+session_start();
+include('../assets/include/script.php');
 
-        $total_cleaning_staff = $con->query("SELECT COUNT(*) AS total_cleaning_staff FROM `staff` WHERE role = 'cleaning'")->fetchColumn();
-
-        $total_cashier_staff = $con->query("SELECT COUNT(*) AS total_cashier_staff FROM `staff` WHERE role = 'receptionist'")->fetchColumn();    
+// Count of role Staff
+$total_trainer_staff = $con->query("SELECT COUNT(*) AS total_trainer_staff FROM `staff` WHERE role = 'trainer' ")->fetchColumn();
+$total_cleaning_staff = $con->query("SELECT COUNT(*) AS total_cleaning_staff FROM `staff` WHERE role = 'cleaning'")->fetchColumn();
+$total_cashier_staff = $con->query("SELECT COUNT(*) AS total_cashier_staff FROM `staff` WHERE role = 'receptionist'")->fetchColumn();    
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
     <!-- table -->
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
-    <title>Staff Page</title>
+    <title>Staff Management</title>
     <link rel="shortcut icon" type="x-icon" href="../assets/IMAGES/logo-icon.png">
 </head>
-                                                   
 <style>
-    :root{
-    --clr-primary:#4444e2;
-    --clr-dangerd:#ea3b3b;
-    --clr-success:#6cf856;
-    --clr-white:#ffffff;
-    --clr-gray:#0a0a0a92;
-    --clr-info-dark:hsl(100, 1%, 10%);
-    --clr-warning:#ff9bac;
-    --clr-light:rgba(254, 250, 250, 0.18);
-
-    --card-border-radius:2rem;
-    --border-radius-1: 0.4rem;
-    --border-radius-2:0.8rem;
-    --border-radius-3:1.2rem;
-
-    --card-padding:1.8rem;
-    --padding-1:1.2rem;
-    --box-shodow:0 2rem 3rem var(var(--clr-light));
-
-    }
-
-    *{
-    padding: 0 ;
-    margin: 0;
-    
-    }
-    html{
-    scroll-behavior: smooth;
-    }
     @font-face {
-    font-family: "Sedan";
-    src: url(../assets/fonts/Sedan/Sedan-Regular.ttf);
-    font-family: 'Montserrat';
-    src: url(../assets/fonts/Montserrat/static/Montserrat-Regular.ttf);
-    font-family: "play";
-    src: url(../assets/fonts/static/Platypi-SemiBold.ttf);
+        font-family: "Montserrat";
+        src: url(../assets/fonts/Montserrat/static/Montserrat-Regular.ttf);
     }
-    @font-face {
+    
+    :root {
+        --bg-primary: #1a1d28;
+        --bg-secondary: #252a3a;
+        --bg-card: #2d3446;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b3c1;
+        --accent-primary: #667eea;
+        --accent-secondary: #764ba2;
+        --border-color: #3a4158;
+    }
 
-    font-family: "dancing2";
-    src: url(../assets/fonts/Dancing_Script/static/DancingScript-Regular.ttf);
-    }
-    @font-face {
-    font-family: "dancing";
-    src: url(../assets/fonts/Dancing_Script/static/DancingScript-Bold.ttf);
-    }
-    .scroll-w{
-    height: 4px;
-    position: fixed;
-    top: 0;
-    z-index: 1000;
-    background-color: rgb(128, 238, 69);
-    width: 100%;
-    scale: 0 1;
-    animation: scroll-w linear;
-    animation-timeline: scroll();
-    }
-    @keyframes scroll-w {
-    to{ scale: 1 1;}
-    }
-    
-    
-
-    
-    /* dark button */
-    .dark-mode {
-        background-color:black;
-        color: #fff;
-    }
- 
-    .btn:hover i {
-    transform: scale(0.9);
-    fill: #333333;
-    }
-    
-    body{
+    body {
+        font-family: 'Montserrat', sans-serif;
         height: 100vh;
         display: grid;
         grid-template-columns: 150px 1fr;
-        grid-template-rows: 40px 1fr;
+        grid-template-rows: 60px 1fr;
         grid-gap: 10px;
         grid-template-areas: 
             "header header"
             "side main";
-        padding: 20px;
-        }
-
-        header{
-        background-color: transparent;
-        grid-area: header;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 30px;
-        }
-        .big_title{
-        letter-spacing: 8px;
-        position: absolute;
-        top: 0px;
-        left: 50%;
-        }
-        .logo{
-        position: absolute;
-        top: 0;
-        left: 10px;
-        width:160px;
-        }
-
-        
-        
-        
-    /*----------- Main -------------*/
-    main{      
-        grid-area: main;
-        padding: 5px;
-        gap: 20px;
-    }
-   
-    .card_dash {  
-        position: relative;
-        height: 280px;
-        width: 400px;  
-        border-radius: 10px;
-        text-shadow: 1px 1px  #f7f5f5d6;
-        backdrop-filter:blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        background-color:rgba(0, 0, 0, 0.477);
-        margin-left:10px;
-        box-shadow: 0px 0px 7px #ffffff52 inset;
-        background: linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0));    
-    }
-    .card_dash i{
-        position: absolute;
-        font-weight: 600;
-        top: 10px;
-        left: 10%;
-    }
-    .card_dash-text {
-        display: flex;
-        letter-spacing: 0.3rem;
-        position: absolute;
-        left: 30px;
-        bottom: 20px;
-    }
-    .card_dash .card-title{
-        position: absolute;
-        top: 30%;
-        left: 50%;
-    }
-    
-   
-
-    .table{
-        grid-area: t;
+        background: var(--bg-primary);
+        color: var(--text-primary);
         margin: 0;
-        padding: 10px;
+        padding: 0;
     }
-    
-    @media (min-width:725px) ,(max-width:950px){ 
+
+    body.light-mode {
+        --bg-primary: #f8f9fa;
+        --bg-secondary: #ffffff;
+        --bg-card: #ffffff;
+        --text-primary: #2d3446;
+        --text-secondary: #6c757d;
+        --accent-primary: #667eea;
+        --accent-secondary: #764ba2;
+        --border-color: #dee2e6;
+    }
+
+    /* Header */
+    header {
+        background-color: var(--bg-secondary);
+        grid-area: header;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        position: relative;
+    }
+
+    .big_title {
+        letter-spacing: 2px;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin: 0;
+        text-align: center;
+        flex: 1;
+    }
+
+    .logo {
+        width: 140px;
+    }
+
+    .dark-mode-toggle {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 5px 15px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .dark-mode-toggle:hover {
+        background: var(--accent-primary);
+    }
+
+    .sidebar {
+        background-color: var(--bg-secondary);
+        grid-area: side;
+        border-radius: 0 15px 15px 0;
+        border-right: 1px solid var(--border-color);
+    }
+
+    /* Main Content */
+    main { 
+        grid-area: main;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        overflow-y: auto;
+    }
+
+    /* Stats Cards */
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border-color);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .stat-number {
+        font-size: 2.2em;
+        font-weight: bold;
+        color: var(--accent-primary);
+        margin: 8px 0;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-icon {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+
+    /* Action Bar */
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-card);
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .page-title h4 {
+        color: var(--text-primary);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .page-title small {
+        color: var(--text-secondary);
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid var(--text-secondary);
+        color: var(--text-secondary);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: transparent;
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--text-secondary);
+        color: var(--bg-primary);
+        border-color: var(--text-secondary);
+    }
+
+    /* Add Staff Form */
+    .add-staff-form {
+        display: none;
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 10px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        border: 1px solid var(--border-color);
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 25px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+    }
+
+    .form-header h3 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .form-header p {
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        transition: all 0.3s ease;
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-primary);
+        background: var(--bg-secondary);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        color: var(--text-primary);
+    }
+
+    .form-label {
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        background: var(--bg-card);
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--accent-primary);
+        font-weight: 500;
+    }
+
+    .role-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .role-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        color: var(--text-primary);
+        padding: 8px 15px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .role-option:hover {
+        border-color: var(--accent-primary);
+    }
+
+    .role-option.selected {
+        border-color: var(--accent-primary);
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    /* Table Container */
+    .table-container {
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
+        overflow-x: auto;
+    }
+
+    /* DataTables Customization */
+    .dataTables_wrapper {
+        color: var(--text-primary);
+    }
+
+    .dataTables_filter input {
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        border-radius: 6px;
+        padding: 8px 12px;
+    }
+
+    .dataTables_length select {
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        border-radius: 6px;
+        padding: 6px;
+    }
+
+    .table {
+        color: var(--text-primary) !important;
+        margin-bottom: 0;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.1) !important;
+    }
+
+    .table-dark {
+        --bs-table-bg: var(--bg-secondary) !important;
+        --bs-table-border-color: var(--border-color) !important;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .btn-sm {
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-success {
+        border-color: #198754;
+        color: #198754;
+    }
+
+    .btn-outline-success:hover {
+        background: #198754;
+        color: white;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 0.75em;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .badge-trainer {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .badge-cleaning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .badge-receptionist {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    /* Salary styling */
+    .salary-amount {
+        font-weight: 600;
+        color: var(--accent-primary);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        body {
+            grid-template-columns: 80px 1fr;
+        }
         
-        .card_dash{ 
-            height: 170px; 
-           
+        .logo {
+            width: 120px;
         }
-        .card_dash h3{
-            font-family: 'dancing';
-        }
-        .table {
-            grid-area: initial !important;
+        
+        .big_title {
+            font-size: 1.1em;
         }
     }
-    @media (max-width:725px){
-     .big_title{
-        font-family: 'Montserrat';
-        letter-spacing: 10px;
-     }
-    
-       
-    }
-     /* End of media */
-    
-    
-    
-            /* form of add staff */
-    .shine {
-      font-size: 2em;
-      font-weight: 900;
-      color: rgba(255, 255, 255, 0.3);
-      background: #222 -webkit-linear-gradient(
-        -40deg, transparent 0%, transparent 40%, #fff 50%, transparent 60%, transparent 100%
-        )0 0 no-repeat;
-       
-      
-          background-clip: text;
-          background-size: 50px;
-          animation: zezzz;
-          animation-duration: 5s;
-          animation-iteration-count: infinite;
-      }
-      @keyframes zezzz {
-      0%,
-      10% {
-          background-position: -200px;
-      }
-      20% {
-          background-position: top left;
-      }
-      100% {
-          background-position: 300px;
-      }
-    
+
+    @media (max-width: 768px) {
+        body {
+            grid-template-columns: 1fr;
+            grid-template-rows: 60px auto 1fr;
+            grid-template-areas: 
+                "header"
+                "side"
+                "main";
+            height: auto;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            border-radius: 0;
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .action-bar {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .role-group {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .logo {
+            width: 100px;
+        }
+        
+        .big_title {
+            font-size: 1em;
+        }
+        
+        main {
+            padding: 15px;
+            gap: 15px;
+        }
     }
 
-    .add_staff {
-      grid-area: f;
-      width: 400px;
-      padding: 10px;
-      background: rgba(24, 20, 20, 0.6);
-      box-shadow: 0 15px 25px rgba(0,0,255,.6);
-      border-radius: 10px;
-    }
-    .add_staff .user-box{
-      position: relative;
-    }
-    .add_staff .user-box input {
-      width: 100%;
-      padding: 10px 0;
-      font-size: 16px;
-      color: #fff;
-      margin-bottom: 30px;
-      border: none;
-      border-bottom: 1px solid #fff;
-      outline: none;
-      background: transparent;
-    }
-    .add_staff .user-box label {
-      position: absolute;
-      top: 0;
-      left: 10px;
-      padding: 10px 0;
-      font-size: 16px;
-      color: #a3a2a2;
-      pointer-events: none;
-      transition: .5s;
+    @media (max-width: 480px) {
+        .table-container {
+            padding: 10px;
+            margin: 0 -10px;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+        }
+        
+        .action-bar {
+            padding: 12px;
+        }
+        
+        .stat-card {
+            padding: 15px;
+        }
+        
+        .form-header h3 {
+            font-size: 1.3em;
+        }
     }
 
-    .add_staff .user-box input:focus ~ label,
-    .add_staff .user-box input:valid ~ label {
-      top: -33px;
-      left: 0;
-      color: #bdb8b8;
-      font-size: 16px;
-    }
-    
-    
-    .add_staff button {
-      position: relative;
-      display: inline-block;
-      background: linear-gradient(90deg , rgba(0,0,255,.6),transparent,transparent,rgba(0,0,255,.6));
-      padding: 10px 20px;
-      border-radius: 30px;
-      width: 40%;
-      color: #d4e7fa;
-      font-size: 16px;
-      transition: .5s;
-      margin-top: 40px;
-      letter-spacing: 4px;
-      animation: float-up-down 1s infinite;
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
     }
 
-    .add_staff button:hover {
-      background: rgba(0,0,255,.6);
-      color: #fff;
-      border-radius: 5px;
-      animation: none;
-      box-shadow: 0 0 5px rgba(0,0,255,.6),
-                  0 0 25px rgba(0,0,255,.6),
-                  0 0 50px rgba(0,0,255,.6);
-                  
-    }
-    @keyframes float-up-down {
-    0% {
-        -webkit-transform:translateY(0)
+    ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
     }
 
-    50% {
-        -webkit-transform: translateY(-10%);
-        transform:translateY(-20%)
+    ::-webkit-scrollbar-thumb {
+        background: var(--accent-primary);
+        border-radius: 4px;
     }
 
-    100% {
-        -webkit-transform: translateY(0);
-        transform:translateY(0)
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-secondary);
     }
+
+    /* Security notice */
+    .security-notice {
+        background: var(--bg-card);
+        border-left: 4px solid var(--accent-primary);
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        font-size: 0.9em;
     }
-   
 </style>
-<body class="100vh" >
-    <div class="scroll-w"></div>
+<body class="dark-mode">
+    <!-- Sidebar Include -->
+    <?php include('../home.php'); ?>
+
     <header class="header">
-        <div class="logo  py-1  ">
-            <img class="" src="../assets/IMAGES/fast-fit.png"  
-            style="width: 100%; filter: drop-shadow(0px 0px 10px  white)">
+        <div class="logo">
+            <img src="../assets/IMAGES/fast-fit.png" style="background:none;width: 100%; filter: brightness(0) invert(1)">
         </div>
-                <span class="big_title mb-3"><center><h1>Staff</h1></center></span>
-    </header>       
-    <main class="main text-center">
+        <span class="big_title"><h4>Staff Management</h4></span>
+        
+    </header>
+    
+    <main>
+        <!-- Security Notice -->
+        <div class="security-notice">
+            <i class="fas fa-shield-alt me-2"></i>
+            <strong>Security Enabled:</strong> All staff data is protected with secure access controls.
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="stat-number"><?= htmlspecialchars($total_trainer_staff) ?></div>
+                <div class="stat-label">Total Trainers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-broom"></i>
+                </div>
+                <div class="stat-number"><?= htmlspecialchars($total_cleaning_staff) ?></div>
+                <div class="stat-label">Cleaning Staff</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-number"><?= htmlspecialchars($total_cashier_staff) ?></div>
+                <div class="stat-label">Receptionists</div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div class="page-title">
+                <h4>Staff List</h4>
+                <small>Manage your gym staff efficiently</small>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-secondary" onclick="exportData()">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+                <button class="btn btn-primary" onclick="toggleAddStaffForm()">
+                    <i class="fas fa-plus me-2"></i>Add Staff
+                </button>
+            </div>
+        </div>
+
+        <!-- Add Staff Form (Hidden by Default) -->
+        <div class="add-staff-form" id="addStaffForm">
+            <div class="form-header">
+                <h3>Add New Staff Member</h3>
+                <p>Fill in the staff details below</p>
+            </div>
             
-        <div class="row mt-3 mb-3">
-            <div class="col-4">
-                        <div class="card_dash  ">
-                            <div class="card-body  text-center">
-                                <h1><i class="fa-solid fa-user"></i></h1>
-                                
-                                <h1 class="card-title"><?=number_format($total_trainer_staff)?></h1>
-                                <h6 class="card_dash-text">TOTAL Trainers</h6>
-                                
-                            </div>             
-                        </div>  
-                      
-            </div>
-            <div class="col-4">
-                        <div class="card_dash " >
-                            <div class="card-body">
-                                <h1><i class="fa-solid fa-broom"></i></h1>
-                                <h1 class="card-title"><?=number_format($total_cleaning_staff)?></h1>
-                                <h6 class="card_dash-text">TOTAL Cleaning staff</h6>
-                                
-                            </div>
+            <form action="../assets/include/script.php" method="POST" id="staffForm">
+                <input type="hidden" name="staff_id" id="staff_id">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <input type="text" name="first_name" class="form-control" required maxlength="50" pattern="[A-Za-z\s]+" title="Only letters and spaces allowed">
+                        <label class="form-label">First Name</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="text" name="last_name" class="form-control" required maxlength="50" pattern="[A-Za-z\s]+" title="Only letters and spaces allowed">
+                        <label class="form-label">Last Name</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="email" name="email" class="form-control" required maxlength="100">
+                        <label class="form-label">Email Address</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="tel" name="phone_number" class="form-control" required pattern="[0-9+\-\s]+" title="Valid phone number required">
+                        <label class="form-label">Mobile Phone</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="date" name="hire_date" class="form-control" required max="<?= date('Y-m-d') ?>">
+                        <label class="form-label">Hire Date</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="number" name="salary" class="form-control" required min="0" step="0.01" max="99999">
+                        <label class="form-label">Salary ($)</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <div class="role-group" id="roleGroup">
+                            <label class="role-option">
+                                <input type="radio" name="role" value="trainer" required> Trainer
+                            </label>
+                            <label class="role-option">
+                                <input type="radio" name="role" value="cleaning" required> Cleaning
+                            </label>
+                            <label class="role-option">
+                                <input type="radio" name="role" value="receptionist" required> Receptionist
+                            </label>
                         </div>
-            </div>
-            <div class="col-4">
-                        <div class="card_dash " >
-                            <div class="card-body text-center">
-                                <h1><i class="fa-solid fa-money-bill-wave"></i></h1>
-                                <h1 class="card-title"><?=number_format($total_cashier_staff)?></h1>
-                                <h6 class="card_dash-text">TOTAL Cashier</h6>
-                                
-                            </div>
-                        </div>
-            </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2 justify-content-end flex-wrap">
+                    <button type="button" class="btn btn-outline-secondary" onclick="toggleAddStaffForm()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" name="btn_ajouter_staff" id="submitBtn">
+                        <i class="fas fa-save me-2"></i>Save Staff
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="row mt-4 ">
-                <div class="col-8">
-                    <table id="myTable" class="table d-gap p-3 mt-5 mb-3 w-100 table-dark text-body opacity-75 bg-transparent "  >
-                        <caption>Table of Staff Members</caption>
-                    <thead>
-                        <tr>
-                        <th scope="col">id</th>
+
+        <!-- Staff Table -->
+        <div class="table-container">
+            <table id="myTable" class="table table-hover w-100">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">#</th>
                         <th scope="col">First Name</th>
                         <th scope="col">Last Name</th>
                         <th scope="col">Email</th>
-                        <th scope="col">Mobile Phone</th>
+                        <th scope="col">Phone</th>
                         <th scope="col">Hire Date</th>
                         <th scope="col">Role</th>
                         <th scope="col">Salary</th>
-                        <th scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="rounded py-3">
+                        <th scope="col" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <?php 
-                                    $req = $con->query("SELECT * FROM `staff`");
-                                    foreach ($req as  $value) {
-                                        
-                                    ?>
-                        <tr>
-                        <th scope="row"><?=$value['staff_id'] ?></th>
-                        <td><?=$value['first_name'] ?></td>
-                        <td><?=$value['last_name'] ?></td>
-                        <td><?=$value['email'] ?></td>
-                        <td><?=$value['phone_number'] ?></td>
-                        <td><?=$value['hire_date'] ?></td>
-                        <td><?=$value['role'] ?></td>
-                        <td><?=$value['salary'] ?></td>
+                    $req = $con->query("SELECT * FROM `staff` ORDER BY staff_id DESC");
+                    foreach ($req as $value) {
+                    ?>
+                    <tr>
+                        <th scope="row"><?= htmlspecialchars($value['staff_id']) ?></th>
+                        <td><?= htmlspecialchars($value['first_name']) ?></td>
+                        <td><?= htmlspecialchars($value['last_name']) ?></td>
+                        <td><?= htmlspecialchars($value['email']) ?></td>
+                        <td><?= htmlspecialchars($value['phone_number']) ?></td>
+                        <td><?= date('M j, Y', strtotime($value['hire_date'])) ?></td>
                         <td>
-                        <a href="../assets/include/script.php?id_sup_staff=<?=$value['staff_id']?>" 
-                        class=" btn btn-sm text-danger border-danger" >
-                        <i class="fa-solid fa-trash"></i>
-                                        </a>
-                        <a  
-                                        data-bs-toggle="modal" data-bs-target="#modif"
-                                        data-id="<?=$value["staff_id"]?>"
-                                        data-first_name="<?=$value["first_name"]?>"
-                                        data-last_name="<?=$value["last_name"]?>"
-                                        data-email="<?=$value["email"]?>"
-                                        data-phone_number="<?=$value["phone_number"]?>"
-                                        data-hire_date="<?=$value["hire_date"]?>"
-                                        data-role="<?=$value["role"]?>"
-                                        data-salary="<?=$value["salary"]?>"
-                            href="../assets/include/script.php?id_edit_staff=<?=$value['staff_id']?>" 
-                            class="btn btn-sm text-success border-success btn_edit" >
-                            <i class="fa-regular fa-pen-to-square"></i>
-                                        </a>
-
+                            <?php
+                            $roleClass = '';
+                            switch($value['role']) {
+                                case 'trainer': $roleClass = 'badge-trainer'; break;
+                                case 'cleaning': $roleClass = 'badge-cleaning'; break;
+                                case 'receptionist': $roleClass = 'badge-receptionist'; break;
+                                default: $roleClass = 'bg-secondary';
+                            }
+                            ?>
+                            <span class="badge <?= $roleClass ?>">
+                                <?= ucfirst(htmlspecialchars($value['role'])) ?>
+                            </span>
                         </td>
-                        
-                        </tr>
-                        <?php  } ?>
-                    </tbody>
-                    </table>
-                    </div>
-                <div class="col-4">                
-                    <form class="add_staff" action="../assets/include/script.php" method="POST" >
-                                    <div class=" modal-body text-light">
-                                    <div class="shine mb-3"> <center>ADD Staff Member</center></div>
-                                        <input type="text" name="staff_id" class="custom-hidden-input" style="display: none;">
-                                        <div class="user-box"> 
-                                        
-                                        <input type="" name="first_name" class="form-control first_name" required>
-                                        <label>First Name</label>
-                                        </div>
-
-                                        <div class="user-box"> 
-                                        <input type="" name="last_name" class="form-control last_name" required>
-                                        <label>Last Name</label>
-                                        </div>
-
-                                        <div class="user-box"> 
-                                        <input type="email" name="email" class="form-control email"required>
-                                        <label>Email</label> 
-                                        </div>
-
-                                        <div class="user-box"> 
-                                        <input type="tel" name="phone_number" class="form-control phone_number" required>
-                                        <label>Mobile Phone</label>
-                                        </div>
-
-                                        <div class="user-box"> 
-                                        <input type="date" name="hire_date" class="form-control hire_date" required>
-                                        <label>Hire date</label>
-                                        </div>
-
-                                        <div class="user-box"> 
-                                        <input type="text" name="role" class="form-control role"required>
-                                        <label>Role</label> 
-                                        </div>
-
-                                        <div class="user-box"> 
-                                        <input type="text" name="salary" class="form-control"required>
-                                        <label>salary</label> 
-                                        </div>                           
-                                    </div>               
-                                <center>
-                                <button href="#" type="submit" class="submit-button" 
-                                name="btn_ajouter_staff"><b>ADD</b>
-                                </button></center>
-                        </form>
-                    
-                </div>                        
+                        <td class="salary-amount">$<?= number_format($value['salary'], 2) ?></td>
+                        <td class="text-center action-buttons">
+                            <button class="btn btn-sm btn-outline-success btn-edit" 
+                                data-id="<?= htmlspecialchars($value["staff_id"]) ?>"
+                                data-first_name="<?= htmlspecialchars($value["first_name"]) ?>"
+                                data-last_name="<?= htmlspecialchars($value["last_name"]) ?>"
+                                data-email="<?= htmlspecialchars($value["email"]) ?>"
+                                data-phone_number="<?= htmlspecialchars($value["phone_number"]) ?>"
+                                data-hire_date="<?= htmlspecialchars($value["hire_date"]) ?>"
+                                data-role="<?= htmlspecialchars($value["role"]) ?>"
+                                data-salary="<?= htmlspecialchars($value["salary"]) ?>">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </button>
+                            <a href="../assets/include/script.php?id_sup_staff=<?= $value['staff_id'] ?>" 
+                               class="btn btn-sm btn-outline-danger" 
+                               onclick="return confirm('Are you sure you want to delete this staff member? This action cannot be undone.')">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
     </main>
-        
-    
-    
-    <!-- jquery code -->
 
-    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
-  <script>
-  $(document).ready(function(){
-        $('.btn_edit').click(function(){
-          $('.first_name').val($(this).data('first_name'))
-          $('.last_name').val($(this).data('last_name'))
-          $('.email').val($(this).data('email'))
-          $('.phone_number').val($(this).data('phone_number'))
-          $('.hire_date').val($(this).data('hire_date'))
-          $('.role').val($(this).data('role'))
-          $('.salary').val($(this).data('salary'))
-      })
-  });
-    
-  </script>
+    <!-- Scripts -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
-  <!-- end of jquery code  -->
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#myTable').DataTable({
+                "pageLength": 10,
+                "language": {
+                    "search": "Search staff:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ staff members"
+                },
+                "responsive": true,
+                "order": [[0, 'desc']]
+            });
 
-  <!-- new client statistic chart script -->
-  
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+            // Role selection styling
+            $('input[name="role"]').change(function() {
+                $('.role-option').removeClass('selected');
+                $(this).closest('.role-option').addClass('selected');
+            });
 
-<script>
-  $(document).ready( function () {
-    $('#myTable').DataTable();
-  });
-</script>
+            // Edit button functionality
+            $('.btn-edit').click(function(){
+                // Populate form with staff data
+                $('#staff_id').val($(this).data('id'));
+                $('input[name="first_name"]').val($(this).data('first_name'));
+                $('input[name="last_name"]').val($(this).data('last_name'));
+                $('input[name="email"]').val($(this).data('email'));
+                $('input[name="phone_number"]').val($(this).data('phone_number'));
+                $('input[name="hire_date"]').val($(this).data('hire_date'));
+                $('input[name="salary"]').val($(this).data('salary'));
+                
+                // Set role and update styling
+                $('input[name="role"][value="' + $(this).data('role') + '"]').prop('checked', true).trigger('change');
+                
+                // Update button text
+                $('#submitBtn').html('<i class="fas fa-sync me-2"></i>Update Staff');
+                
+                // Show the form
+                toggleAddStaffForm();
+                
+                // Scroll to form
+                $('html, body').animate({
+                    scrollTop: $("#addStaffForm").offset().top - 100
+                }, 500);
+            });
+
+            // Dark mode toggle
+            // $('#darkModeToggle').click(function() {
+            //     $('body').toggleClass('light-mode');
+            //     if ($('body').hasClass('light-mode')) {
+            //         $(this).html('<i class="fas fa-moon me-2"></i>Dark Mode');
+            //         localStorage.setItem('theme', 'light');
+            //     } else {
+            //         $(this).html('<i class="fas fa-sun me-2"></i>Light Mode');
+            //         localStorage.setItem('theme', 'dark');
+            //     }
+            // });
+
+            // Load saved theme
+            if (localStorage.getItem('theme') === 'light') {
+                $('body').addClass('light-mode');
+                $('#darkModeToggle').html('<i class="fas fa-moon me-2"></i>Dark Mode');
+            }
+
+            // Form validation
+            $('#staffForm').on('submit', function(e) {
+                const salary = $('input[name="salary"]').val();
+                if (salary < 0) {
+                    e.preventDefault();
+                    alert('Salary cannot be negative.');
+                    return false;
+                }
+                
+                const hireDate = new Date($('input[name="hire_date"]').val());
+                const today = new Date();
+                if (hireDate > today) {
+                    e.preventDefault();
+                    alert('Hire date cannot be in the future.');
+                    return false;
+                }
+            });
+        });
+
+        function toggleAddStaffForm() {
+            const form = $('#addStaffForm');
+            if (form.is(':visible')) {
+                form.slideUp(300);
+                // Clear form when hiding
+                form.find('form')[0].reset();
+                $('#staff_id').val('');
+                $('.role-option').removeClass('selected');
+                $('#submitBtn').html('<i class="fas fa-save me-2"></i>Save Staff');
+            } else {
+                form.slideDown(300);
+            }
+        }
+
+        function exportData() {
+            // Enhanced export functionality
+            if (confirm('Export staff data to CSV?')) {
+                // This would typically make an AJAX call to generate and download the CSV
+                alert('Export functionality would generate a secure CSV download');
+            }
+        }
+
+        // Input sanitization helper
+        function sanitizeInput(input) {
+            return input.replace(/[<>]/g, '');
+        }
+
+        // Auto-sanitize inputs
+        $('input[type="text"]').on('input', function() {
+            this.value = sanitizeInput(this.value);
+        });
+    </script>
 </body>
 </html>

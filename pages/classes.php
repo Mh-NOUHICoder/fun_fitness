@@ -1,7 +1,8 @@
 <?php
+
+session_start();
+
 include('../assets/include/script.php');
-//Sidebar include
-include('../HOME.PHP');
 
 // Get class statistics
 $total_classes = $con->query("SELECT COUNT(*) AS total_classes FROM `classes`")->fetchColumn();
@@ -27,10 +28,10 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <style>
     :root{
-    --clr-primary:#4444e2;
+    --clr-primary:#667eea; /* Updated to match dashboard theme */
     --clr-dangerd:#ea3b3b;
     --clr-success:#6cf856;
-    --clr-white:#ffffff;
+    --clr-white:#fff;
     --clr-gray:#0a0a0a92;
     --clr-info-dark:hsl(100, 1%, 10%);
     --clr-warning:#ff9bac;
@@ -43,42 +44,43 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     --card-padding:1.8rem;
     --padding-1:1.2rem;
-    --box-shodow:0 2rem 3rem var(var(--clr-light));
+    --box-shadow: 0 2rem 3rem var(--clr-light);
 
+    /* Theme Variables (Default Dark) */
+    --bg-body: #1a1d28;
+    --text-main: #ffffff;
+    --card-bg: rgba(0, 0, 0, 0.477);
+    --card-shadow-inset: 0px 0px 7px #ffffff52;
+    --table-header-bg: rgba(255, 255, 255, 0.1);
+    --table-row-hover: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --input-border: rgba(255, 255, 255, 0.2);
+    --modal-bg: rgba(0, 0, 0, 0.9);
+    --scroll-color: #667eea;
     }
 
     *{
     padding: 0 ;
     margin: 0;
+    box-sizing: border-box;
     
     }
     html{
     scroll-behavior: smooth;
     }
-    @font-face {
-    font-family: "Sedan";
-    src: url(../assets/fonts/Sedan/Sedan-Regular.ttf);
-    font-family: 'Montserrat';
-    src: url(../assets/fonts/Montserrat/static/Montserrat-Regular.ttf);
-    font-family: "play";
-    src: url(../assets/fonts/static/Platypi-SemiBold.ttf);
+    
+    /* Use global font */
+    body {
+        font-family: 'Montserrat', sans-serif;
     }
-    @font-face {
 
-    font-family: "dancing2";
-    src: url(../assets/fonts/Dancing_Script/static/DancingScript-Regular.ttf);
-    }
-    @font-face {
-    font-family: "dancing";
-    src: url(../assets/fonts/Dancing_Script/static/DancingScript-Bold.ttf);
-    }
     /* scroll style */
     .scroll-w{
     height: 4px;
     position: fixed;
     top: 0;
     z-index: 1000;
-    background-color: rgb(128, 238, 69);
+    background-color: var(--scroll-color);
     width: 100%;
     scale: 0 1;
     animation: scroll-w linear;
@@ -88,25 +90,27 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
     to{ scale: 1 1;}
     }
     /* end style of scroll */
-    h1{
-    font-family: "Montserrat";
-    letter-spacing: 8px;
-    font-weight: 700;
-    font-size: xx-large;
-    }
 
-
-    .logo{
-    width:160px;
-
+    .logo img {
+        width: 140px;
     }
 
     
     /* dark button */
-    .dark-mode {
-        background-color:black;
-        color: #fff;
-    }
+    body.light-mode {
+        --bg-body: #f8f9fa;
+        --text-main: #2d3446;
+        --clr-white: #2d3446; /* Invert text color for light mode */
+        --card-bg: rgba(255, 255, 255, 0.8);
+        --card-shadow-inset: 0px 0px 7px rgba(0,0,0,0.1);
+        --table-header-bg: rgba(0, 0, 0, 0.05);
+        --table-row-hover: rgba(0, 0, 0, 0.02);
+        --input-bg: #ffffff;
+        --input-border: #ced4da;
+        --modal-bg: rgba(255, 255, 255, 0.95);
+        --scroll-color: #4444e2;
+    } 
+
     .btn-dark-mode {
     position: absolute;
     bottom: 3rem;
@@ -150,42 +154,58 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     
     body{
-        
+        background-color: var(--bg-body);
+        color: var(--text-main);
         height: 90vh;
         display: grid;
         grid-template-columns: 150px 1fr;
-        grid-template-rows: 60px 1fr;
+        grid-template-rows: 70px 1fr;
         grid-gap: 10px;
         grid-template-areas: 
             "header header"
             "side main" ;
         }
+
+    /* Responsive Layout */
+    @media (max-width: 768px) {
+        body {
+            grid-template-columns: 1fr;
+            grid-template-rows: 60px auto 1fr;
+            grid-template-areas: 
+                "header"
+                "side"
+                "main";
+            height: auto;
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+    }
     /* Header style */
 
         header{
-        background-color: transparent;
         grid-area: header;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 30px;
+        background-color: var(--bg-body);
+        border-bottom: 1px solid var(--input-border);
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 10;
         }
+        
         .big_title{
-        letter-spacing: 8px;
-        position: absolute;
-        top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-        }
-        .logo{
-        position: absolute;
-        top: 0;
-        left: 10px;
-        width:160px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            flex: 1;
+            text-align: center;
         }
 
-        .sidebar{
-        background-color: black;
-        grid-area: side;
-
+        .sidebar {
+            grid-area: side;
+            min-width: 0; /* Prevent overflow */
         }
     
     /*----------- Main style-------------*/
@@ -196,57 +216,56 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
    
     .card_dash {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         position: relative;
-        height: 200px;
-        width: auto;
-        gap: 20px;
+        height: 100%;
+        width:100%;
+        min-height: 180px;
+        padding: 1.5rem;
         border-radius: var(--border-radius-1);
-        text-shadow: 1px 1px  #f7f5f5d6;
         backdrop-filter:blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        background-color:rgba(0, 0, 0, 0.477);
-        margin-left:10px;
-        box-shadow: 0px 0px 7px #ffffff52 inset;
-        background: linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0));
-        
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow-inset) inset;
+        border: 1px solid var(--input-border);
+        transition: transform 0.3s ease;
     }
+    
+    .card_dash:hover {
+        transform: translateY(-5px);
+    }
+
     .card_dash_table{
-        min-height: 500px;
-        gap: 20px;
         padding: 20px;
         border-radius: var(--border-radius-1);
-        text-shadow: 1px 1px  #f7f5f5d6;
         backdrop-filter:blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        background-color:rgba(0, 0, 0, 0.477);
-        margin-left:10px;
-        box-shadow: 0px 0px 7px #ffffff52 inset;
-        background: linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0));
-    }
-   
-    .card_dash h2{
-        position:absolute;
-        top: 10%;
-        left: 20%;
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow-inset) inset;
+        border: 1px solid var(--input-border);
     }
     .card_dash i{
-        position: absolute;
-        right: 5px;
-        font-size: 2rem;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--clr-primary);
     }
+    
     .card_dash-text {
-        display: flex;
-        letter-spacing: 0.3rem;
-        position: absolute;
-        left: 30px;
-        bottom: 20px;
+        letter-spacing: 2px;
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-top: 0.5rem;
+        text-transform: uppercase;
     }
+    
     .card_dash .card-title{
-        position: absolute;
-        top: 30%;
-        left: 50%;
-        transform: translateX(-50%);
         font-size: 3rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1;
     }
     
     /* Classes Table Styles */
@@ -257,20 +276,22 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     .classes-table th {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--table-header-bg);
         padding: 12px 15px;
         text-align: left;
         font-weight: 600;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        border-bottom: 1px solid var(--input-border);
+        color: var(--text-main);
     }
     
     .classes-table td {
         padding: 12px 15px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--input-border);
+        color: var(--text-main);
     }
     
     .classes-table tr:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: var(--table-row-hover);
     }
     
     .action-buttons {
@@ -285,7 +306,7 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--input-bg);
         color: var(--clr-white);
         border: none;
         cursor: pointer;
@@ -333,11 +354,12 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
     .modal-content {
         width: 90%;
         max-width: 600px;
-        background: rgba(0, 0, 0, 0.9);
+        background: var(--modal-bg);
         border-radius: 12px;
         padding: 30px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--input-border);
+        color: var(--text-main);
         backdrop-filter: blur(10px);
     }
 
@@ -347,7 +369,7 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
         align-items: center;
         margin-bottom: 20px;
         padding-bottom: 15px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--input-border);
     }
 
     .modal-title {
@@ -358,7 +380,7 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
     .close-modal {
         background: none;
         border: none;
-        color: var(--clr-white);
+        color: var(--text-main);
         font-size: 1.2rem;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -381,10 +403,10 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
     .form-input, .form-select, .form-textarea {
         width: 100%;
         padding: 12px 15px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
         border-radius: 8px;
-        color: var(--clr-white);
+        color: var(--text-main);
         font-size: 1rem;
         transition: all 0.3s ease;
     }
@@ -413,12 +435,12 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
         gap: 10px;
         margin-top: 20px;
         padding-top: 15px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid var(--input-border);
     }
 
     .btn-secondary {
-        background: rgba(255, 255, 255, 0.1);
-        color: var(--clr-white);
+        background: var(--input-bg);
+        color: var(--text-main);
         border: none;
         padding: 10px 20px;
         border-radius: 8px;
@@ -452,46 +474,119 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
     
     @media (min-width:725px) ,(max-width:950px){
         .card_dash{
-            gap: 30px;
+            gap: 30px; 
+        }
+        .card_dash_table{
+            margin-bottom: 3rem ;
         }
     }
     
     @media (max-width:725px){
         main{
-            gap: 20px;
+            padding: 15px;
+            gap: 15px;
         }
         
         .card_dash{
-            grid-area: initial ;
-        }
-
-        .big_title{
-            visibility: hidden;
+            min-height: 140px; /* Compact height for mobile */
+            padding: 1rem;
         }
         
         .form-row {
             grid-template-columns: 1fr;
         }
+        header{
+            padding: 0 15px;
+        }
+         .big_title{
+            font-size: 1.1rem;
+            text-align: right;
+        }
+        .logo img {
+            width: 100px;
+        }
     }
      /* End of media */
+
+    /* Header Responsiveness */
+    @media (max-width: 768px) {
+        /* Creative Card Table for Mobile */
+        .classes-table thead {
+            display: none;
+        }
+        
+        .classes-table, .classes-table tbody, .classes-table tr, .classes-table td {
+            display: block;
+            width: 100%;
+        }
+        
+        .classes-table tr {
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--input-border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .classes-table td {
+            padding: 0.5rem 0;
+            border: none;
+            text-align: right;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        
+        .classes-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: var(--clr-primary);
+            opacity: 0.9;
+            margin-right: 1rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        /* First cell (Name) acts as card header */
+        .classes-table td:first-child {
+            text-align: left;
+            border-bottom: 1px solid var(--input-border);
+            padding-bottom: 0.8rem;
+            margin-bottom: 0.5rem;
+            justify-content: flex-start;
+        }
+        
+        .classes-table td:first-child::before {
+            display: none;
+        }
+
+        .classes-table td:last-child {
+            justify-content: flex-end;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--input-border);
+            margin-top: 0.5rem;
+        }
+    }
     
      
 </style>
-<body class="1000vh" >
+<body>
     <div class="scroll-w"></div>
     
        
         <!-- sidebar include -->
         <?php 
-            include('../HOME.PHP');
+            include('../home.php');
         ?>
         <!-- Page Content -->
         <!---------------------------------------------- Header Code -->
         <header class="header">
-            <div class="logo bg-transparen sidebar-heading   ">
-                        <img class="" src="../assets/IMAGES/fast-fit.png"  
-                        style="background:none;width: 100%; filter: drop-shadow(0px 0px 10px  white)"></div>
-                    <span class="big_title "><center><h1>Classes Management</h1></center></span>
+            <div class="logo">
+                <img src="../assets/IMAGES/fast-fit.png" alt="Fast Fit Gym">
+            </div>
+            <h1 class="big_title">Classes Management</h1>
         </header>
         <!----------------------------------------------End of Header Code -->
         
@@ -501,33 +596,27 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
             <div id="alert-message" class="alert" style="display: none;"></div>
             
             <div class="row mt-3">
-                <div class="col-4">
+                <div class="col-12 col-md-4 mb-3">
                     <div class="card_dash">
-                        <div class="card-body">
-                            <h2><i class="fa-solid fa-dumbbell"></i></h2>
-                            <h1 class="card-title"><?=number_format($total_classes)?></h1>
-                            <h6 class="card_dash-text">TOTAL CLASSES</h6>
-                        </div>
+                        <i class="fa-solid fa-dumbbell"></i>
+                        <h1 class="card-title"><?=number_format($total_classes)?></h1>
+                        <h6 class="card_dash-text">TOTAL CLASSES</h6>
                     </div>
                 </div>
 
-                <div class="col-4">
+                <div class="col-12 col-md-4 mb-3">
                     <div class="card_dash">
-                        <div class="card-body">
-                            <h2><i class="fa-solid fa-check-circle"></i></h2>
-                            <h1 class="card-title"><?=number_format($active_classes)?></h1>
-                            <h6 class="card_dash-text">ACTIVE CLASSES</h6>
-                        </div>
+                        <i class="fa-solid fa-check-circle"></i>
+                        <h1 class="card-title"><?=number_format($active_classes)?></h1>
+                        <h6 class="card_dash-text">ACTIVE CLASSES</h6>
                     </div>
                 </div>
 
-                <div class="col-4">
+                <div class="col-12 col-md-4 mb-3">
                     <div class="card_dash">
-                        <div class="card-body">
-                            <h2><i class="fa-solid fa-calendar-alt"></i></h2>
-                            <h1 class="card-title"><?=number_format($upcoming_classes)?></h1>
-                            <h6 class="card_dash-text">UPCOMING CLASSES</h6>
-                        </div>
+                        <i class="fa-solid fa-calendar-alt"></i>
+                        <h1 class="card-title"><?=number_format($upcoming_classes)?></h1>
+                        <h6 class="card_dash-text">UPCOMING CLASSES</h6>
                     </div>
                 </div>
             </div>
@@ -573,21 +662,21 @@ $staff = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
                                             $time_range = $start_time . " - " . $end_time;
                                     ?>
                                     <tr>
-                                        <td>
+                                        <td data-label="Class Name">
                                             <div class="d-flex align-items-center">
                                                 <div class="me-3">
                                                     <i class="fas fa-dumbbell text-primary"></i>
                                                 </div>
                                                 <div>
-                                                    <div><strong><?= htmlspecialchars($class['name']) ?></strong></div>
+                                                    <div class="fw-bold fs-5"><?= htmlspecialchars($class['name']) ?></div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td><?= htmlspecialchars($class['description']) ?></td>
-                                        <td><?= htmlspecialchars($class['instructor_name'] ?? 'Not Assigned') ?></td>
-                                        <td><?= htmlspecialchars($class['day']) ?></td>
-                                        <td><?= $time_range ?></td>
-                                        <td>
+                                        <td data-label="Description"><?= htmlspecialchars($class['description']) ?></td>
+                                        <td data-label="Instructor"><?= htmlspecialchars($class['instructor_name'] ?? 'Not Assigned') ?></td>
+                                        <td data-label="Day"><?= htmlspecialchars($class['day']) ?></td>
+                                        <td data-label="Time"><?= $time_range ?></td>
+                                        <td data-label="Actions">
                                             <div class="action-buttons">
                                                 <button class="action-btn edit-btn" data-id="<?= $class['class_id'] ?>">
                                                     <i class="fas fa-edit"></i>

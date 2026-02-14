@@ -78,8 +78,8 @@
                 <h1 class="hero-title">Bring out the <span>athlete in you</span></h1>
                 <p class="hero-subtitle">Transform your body, transform your life with our expert trainers and state-of-the-art facilities.</p>
                 <div class="cta-buttons">
-                    <a href="login.php" class="btn btn-primary">Sign In</a>
-                    <a href="register.php" class="btn btn-outline">Join With Us</a>
+                    <a href="./login.php" class="btn btn-primary">Sign In</a>
+                    <a href="./login.php" class="btn btn-outline">Join With Us</a>
                 </div>
             </div>
         </div>
@@ -535,7 +535,7 @@
                 <div class="cta-content">
                     <h2>Start Your Fitness Journey Today</h2>
                     <p class="mb-4">We know starting a fitness routine can be tough, but we're here to help you see fitness in a new way. We believe healthy habits lead to a healthy lifestyle, and we're here to support you on that journey!</p>
-                    <a href="register.php" class="btn btn-primary">Join Now</a>
+                    <a href="login.php" class="btn btn-primary">Join Now</a>
                 </div>
             </div>
         </section>
@@ -560,7 +560,7 @@
                     <h4 class="footer-title">Quick Links</h4>
                     <div class="footer-links">
                         <a href="#hero">Home</a>
-                        <a href="pages/classes.php">Classes</a>
+                        <a href="#classes">Classes</a>
                         <a href="#schedule-preview">Schedule</a>
                         <a href="#pricing">Memberships</a>
                         <a href="#pricing">Pricing</a>

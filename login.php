@@ -1,4 +1,7 @@
 <?php 
+
+session_start();
+
 include('assets/include/config.php');
 
 $error_message = '';
@@ -8,11 +11,15 @@ if (isset($_POST["btn_login"])){
     $loginname = trim(htmlspecialchars($_POST["login_name"]));
     $pwd = trim(htmlspecialchars($_POST["pwd_login"]));
 
-    // Query with prepared statement (strongly recommended)
-    $stmt = $cnx->prepare("SELECT * FROM `users` WHERE login = ? AND pwd = ?");
-    $stmt->execute([$loginname, $pwd]);
+    // Fetch user by login only first
+    $stmt = $cnx->prepare("SELECT * FROM `users` WHERE login = ?");
+    $stmt->execute([$loginname]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if($stmt->rowCount() > 0){
+    // Verify hashed password
+    if($user && password_verify($pwd, $user['pwd'])){
+        $_SESSION['user_id'] = $user['id_user'];
+        $_SESSION['user_name'] = $user['name'];
         header("location:pages/dashboard.php");
         exit();
     } else {
@@ -30,282 +37,8 @@ if (isset($_POST["btn_login"])){
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>Fast Fit Gym Portal</title>
     <link rel="shortcut icon" type="image/png" href="assets/IMAGES/logo-icon.png">
-    <style>
-        :root {
-            --primary: #4e54c8;
-            --secondary: #00c9a7;
-            --accent: #ff6b6b;
-            --dark: #121826;
-            --darker: #0a0e15;
-            --light: #f0f5ff;
-            --gray: #2a3349;
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', 'Segoe UI', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, var(--darker), var(--dark));
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            color: var(--light);
-        }
-
-        .portal-container {
-            width: 100%;
-            max-width: 900px;
-            background: rgba(22, 25, 40, 0.95);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .portal-header {
-            padding: 30px;
-            text-align: center;
-            background: rgba(18, 22, 37, 0.8);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .brand-logo {
-            max-width: 150px;
-            margin-bottom: 10px;
-            transition: var(--transition);
-        }
-
-        .portal-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--primary);
-        }
-
-        .portal-subtitle {
-            color: #a0aec0;
-            font-size: 1rem;
-            max-width: 500px;
-            margin: 0 auto;
-            font-weight: 300;
-        }
-
-        .toggle-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .toggle-button {
-            padding: 12px 30px;
-            background: transparent;
-            color: var(--light);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            text-transform: uppercase;
-        }
-
-        .toggle-button.active {
-            background: var(--primary);
-            color: var(--dark);
-            border-color: var(--primary);
-        }
-
-        .toggle-button:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-        }
-
-        .form-section {
-            padding: 30px;
-        }
-
-        .form-container {
-            display: none;
-        }
-
-        .form-container.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .form-header h2 {
-            font-size: 1.8rem;
-            color: var(--light);
-            font-weight: 600;
-        }
-
-        .form-header p {
-            color: #a0aec0;
-            font-size: 0.95rem;
-            margin-top: 5px;
-        }
-
-        .alert {
-            padding: 15px;
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.4);
-            color: #f8d7da;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            text-align: center;
-            animation: slideIn 0.5s ease;
-        }
-
-        .success {
-            background: rgba(0, 201, 167, 0.2);
-            border: 1px solid rgba(0, 201, 167, 0.4);
-            color: #d4ffea;
-        }
-
-        .form-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        /* Left side icons (user, lock, at) */
-        .form-group i.fa-user,
-        .form-group i.fa-lock,
-        .form-group i.fa-at {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #718096;
-            font-size: 1.1rem;
-            z-index: 2;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 14px 45px 14px 45px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: var(--light);
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-input:focus {
-            border-color: var(--primary);
-            outline: none;
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.2);
-        }
-
-        .form-input:focus + i.fa-user,
-        .form-input:focus + i.fa-lock,
-        .form-input:focus + i.fa-at {
-            color: var(--primary);
-        }
-
-        .form-input::placeholder {
-            color: #718096;
-            font-weight: 300;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #718096;
-            transition: var(--transition);
-            z-index: 10;
-        }
-
-        .password-toggle:hover {
-            color: var(--primary);
-        }
-
-        .form-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .form-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: var(--transition);
-        }
-
-        .form-link:hover {
-            text-decoration: underline;
-            color: var(--light);
-        }
-
-        .form-button {
-            padding: 14px 30px;
-            background: var(--primary);
-            color: var(--dark);
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            text-transform: uppercase;
-        }
-
-        .form-button:hover {
-            background: var(--primary);
-            color: var(--light);
-            transform: translateY(-2px);
-        }
-
-        @media (max-width: 768px) {
-            .portal-container {
-                margin: 20px;
-            }
-
-            .toggle-buttons {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .toggle-button {
-                width: 100%;
-            }
-
-            .form-footer {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .form-button {
-                width: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="./assets/CSS/login.css">
+   
 </head>
 
 <body>
@@ -348,7 +81,7 @@ if (isset($_POST["btn_login"])){
                     </div>
 
                     <div class="form-footer">
-                        <a href="#" class="form-link">Forgot Password?</a>
+                        <a href="forgot_password.php" class="form-link">Forgot Password?</a>
                         <button type="submit" name="btn_login" class="form-button">Sign In</button>
                     </div>
                 </form>
@@ -366,6 +99,12 @@ if (isset($_POST["btn_login"])){
                         <i class="fas fa-user"></i>
                         <input type="text" name="name" placeholder="Full Name" class="form-input" required 
                                aria-label="Full Name" autocomplete="name">
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" name="email" placeholder="Email Address" class="form-input" required 
+                               aria-label="Email" autocomplete="email">
                     </div>
 
                     <div class="form-group">

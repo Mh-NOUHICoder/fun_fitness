@@ -1,10 +1,30 @@
-<?php include('../assets/INCLUDE/script.php');
+<?php 
+session_start();
 
-       $total_members = $con->query("SELECT COUNT(*) AS total_members FROM `members`")->fetchColumn();
+// Security Check: Redirect to login if not authenticated
+if (!isset($_SESSION['user_id'])) {
+    header("location:../login.php");
+    exit();
+}
 
-       $total_staff = $con->query("SELECT COUNT(*) AS total_staff FROM `staff`")->fetchColumn();
+include('../assets/include/script.php');
 
+$total_members = $con->query("SELECT COUNT(*) AS total_members FROM `members`")->fetchColumn();
+$total_staff = $con->query("SELECT COUNT(*) AS total_staff FROM `staff`")->fetchColumn();
 
+// Real data for charts - get monthly member registrations
+$monthly_data = [];
+$monthly_labels = [];
+
+for ($i = 1; $i <= 12; $i++) {
+    $stmt = $con->prepare("SELECT COUNT(*) FROM members WHERE MONTH(join_date) = ? AND YEAR(join_date) = YEAR(CURDATE())");
+    $stmt->execute([$i]);
+    $monthly_data[] = $stmt->fetchColumn();
+    $monthly_labels[] = date('M', mktime(0, 0, 0, $i, 1));
+}
+
+// Sample revenue data (you can replace with real revenue data from your database)
+$revenue_data = [4500, 5200, 4800, 6100, 5800, 7200, 6800, 7500, 8200, 7800, 8500, 9200];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,402 +35,821 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <title>Dashboard</title>
+    <!-- Add Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard - Fast Fit Gym</title>
     <link rel="shortcut icon" type="x-icon" href="../assets/IMAGES/logo-icon.png">
 </head>
 <style>
-    :root{
-    --clr-primary:#4444e2;
-    --clr-dangerd:#ea3b3b;
-    --clr-success:#6cf856;
-    --clr-white:#ffffff;
-    --clr-gray:#0a0a0a92;
-    --clr-info-dark:hsl(100, 1%, 10%);
-    --clr-warning:#ff9bac;
-    --clr-light:rgba(254, 250, 250, 0.18);
-
-    --card-border-radius:2rem;
-    --border-radius-1: 0.4rem;
-    --border-radius-2:0.8rem;
-    --border-radius-3:1.2rem;
-
-    --card-padding:1.8rem;
-    --padding-1:1.2rem;
-    --box-shodow:0 2rem 3rem var(var(--clr-light));
-
-    }
-
-    *{
-    padding: 0 ;
-    margin: 0;
-    
-    }
-    html{
-    scroll-behavior: smooth;
-    }
     @font-face {
-    font-family: "Sedan";
-    src: url(../assets/fonts/Sedan/Sedan-Regular.ttf);
-    font-family: 'Montserrat';
-    src: url(../assets/fonts/Montserrat/static/Montserrat-Regular.ttf);
-    font-family: "play";
-    src: url(../assets/fonts/static/Platypi-SemiBold.ttf);
+        font-family: "Montserrat";
+        src: url(../assets/fonts/Montserrat/static/Montserrat-Regular.ttf);
     }
-    @font-face {
-
-    font-family: "dancing2";
-    src: url(../assets/fonts/Dancing_Script/static/DancingScript-Regular.ttf);
-    }
-    @font-face {
-    font-family: "dancing";
-    src: url(../assets/fonts/Dancing_Script/static/DancingScript-Bold.ttf);
-    }
-    /* scroll style */
-    .scroll-w{
-    height: 4px;
-    position: fixed;
-    top: 0;
-    z-index: 1000;
-    background-color: rgb(128, 238, 69);
-    width: 100%;
-    scale: 0 1;
-    animation: scroll-w linear;
-    animation-timeline: scroll();
-    }
-    @keyframes scroll-w {
-    to{ scale: 1 1;}
-    }
-    /* end style of scroll */
-    h1{
-    font-family: "Montserrat";
-    letter-spacing: 8px;
-    font-weight: 700;
-    font-size: xx-large;
-    }
-
-
-    .logo{
-    width:160px;
-
-    }
-
     
-    /* dark button */
-    .dark-mode {
-        background-color:black;
-        color: #fff;
-    }
-    .btn {
-    position: absolute;
-    bottom: 3rem;
-    display: grid;
-    place-items: center;
-    background: #e3edf7;
-    width: 30px;
-    height: 30px;
-    margin: 2rem;
-    padding: 1.4em;
-    border-radius: 50%;
-    border: 1px solid rgba(0,0,0,0);
-    cursor: pointer;
-    transition: transform 0.5s;
+    :root {
+        --bg-primary: #1a1d28;
+        --bg-secondary: #252a3a;
+        --bg-card: #2d3446;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b3c1;
+        --accent-primary: #667eea;
+        --accent-secondary: #764ba2;
+        --border-color: #3a4158;
+        --success: #6cf856;
+        --danger: #ea3b3b;
+        --warning: #ff9bac;
     }
 
-    .btn:hover {
-    box-shadow: inset 4px 4px 6px -1px rgba(0,0,0,0.2),
-            inset -4px -4px 6px -1px rgba(255,255,255,0.7),
-            -0.5px -0.5px 0px rgba(255,255,255,1),
-            0.5px 0.5px 0px rgba(0,0,0,0.15),
-            0px 12px 10px -10px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.1);
-    transform: translateY(0.5em);
-    }
-
-    .btn i {
-    position: absolute;
-    top: 15px;
-    right: 10px;
-    width: 25px;
-    height: 25px;
-    transition: transform 0.5s;
-    }
-     
-    .btn:hover i {
-    transform: scale(0.9);
-    fill: #333333;
-    }
-    /* end style of dark btn */
-
-    
-    body{
-        
-        height: 90vh;
+    body {
+        font-family: 'Montserrat', sans-serif;
+        height: 100vh;
         display: grid;
         grid-template-columns: 150px 1fr;
         grid-template-rows: 60px 1fr;
         grid-gap: 10px;
         grid-template-areas: 
             "header header"
-            "side main" ;
-        }
-    /* Header style */
+            "side main";
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        margin: 0;
+        padding: 0;
+    }
 
-        header{
-        background-color: transparent;
+    body.light-mode {
+        --bg-primary: #f8f9fa;
+        --bg-secondary: #ffffff;
+        --bg-card: #ffffff;
+        --text-primary: #2d3446;
+        --text-secondary: #6c757d;
+        --accent-primary: #667eea;
+        --accent-secondary: #764ba2;
+        --border-color: #dee2e6;
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
+    }
+
+    /* Header */
+    header {
+        background-color: var(--bg-secondary);
         grid-area: header;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 30px;
-        }
-        .big_title{
-        letter-spacing: 8px;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        position: relative;
+    }
+
+    .big_title {
+        letter-spacing: 2px;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin: 0;
+        text-align: center;
+        flex: 1;
+    }
+
+    .logo {
+        width: 140px;
+    }
+
+    .dark-mode-toggle {
         position: absolute;
-        top: 0px;
-        left: 50%;
-        }
-        .logo{
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 5px 15px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9em;
+    }
+
+    .dark-mode-toggle:hover {
+        background: var(--accent-primary);
+    }
+
+    .sidebar {
+        background-color: var(--bg-secondary);
+        grid-area: side;
+        border-radius: 0 15px 15px 0;
+        border-right: 1px solid var(--border-color);
+    }
+
+    /* Main Content */
+    main { 
+        grid-area: main;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 20px;
+        overflow-y: auto;
+    }
+
+    /* Stats Cards */
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
         position: absolute;
         top: 0;
-        left: 10px;
-        width:160px;
-        }
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    }
 
-        .sidebar{
-        background-color: black;
-        grid-area: side;
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
 
-        }
-    
-    /*----------- Main style-------------*/
-    main{ 
-        grid-area: main ;
-        padding: 25px;
-        gap: 20px;
-        }
-   
-    .card_dash {
-        position: relative;
-        height: 200px;
-        width: auto;
-        gap: 20px;
-        border-radius: var(--border-radius-1);
-        text-shadow: 1px 1px  #f7f5f5d6;
-        backdrop-filter:blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        background-color:rgba(0, 0, 0, 0.477);
-        margin-left:10px;
-        box-shadow: 0px 0px 7px #ffffff52 inset;
-        background: linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0));
-        
+    .stat-card.members::before {
+        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
     }
-    .card_dash_chart{
-        height: 500px;
-        gap: 20px;
-        padding: 10px;
-        border-radius: var(--border-radius-1);
-        text-shadow: 1px 1px  #f7f5f5d6;
-        backdrop-filter:blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        background-color:rgba(0, 0, 0, 0.477);
-        margin-left:10px;
-        box-shadow: 0px 0px 7px #ffffff52 inset;
-        background: linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0));
+
+    .stat-card.staff::before {
+        background: linear-gradient(135deg, var(--success) 0%, #28a745 100%);
     }
-   
-    .card_dash h2{
-        position:absolute;
-        top: 10%;
-        left: 20%;
+
+    .stat-icon {
+        font-size: 2.5em;
+        color: var(--accent-primary);
+        margin-bottom: 15px;
+        opacity: 0.8;
     }
-    .card_dash i{
-        position: absolute;
-        right: 5px;
+
+    .stat-card.members .stat-icon {
+        color: var(--accent-primary);
     }
-    .card_dash-text {
+
+    .stat-card.staff .stat-icon {
+        color: var(--success);
+    }
+
+    .stat-number {
+        font-size: 3em;
+        font-weight: bold;
+        color: var(--text-primary);
+        margin: 10px 0;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 500;
+    }
+
+    .stat-trend {
         display: flex;
-        letter-spacing: 0.3rem;
-        position: absolute;
-        left: 30px;
-        bottom: 20px;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 10px;
+        font-size: 0.85em;
     }
-    .card_dash .card-title{
-        position: absolute;
-        top: 30%;
-        left: 50%;
+
+    .trend-up {
+        color: var(--success);
     }
-    
-    
-    
-    @media (min-width:725px) ,(max-width:950px){
-        #myChart{
-           min-width: 400px;
-            height: 170px;
+
+    .trend-down {
+        color: var(--danger);
+    }
+
+    /* Charts Container */
+    .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 20px;
+    }
+
+    .chart-card {
+        background: var(--bg-card);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .chart-title {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin: 0;
+        font-size: 1.2em;
+    }
+
+    .chart-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .chart-btn {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.8em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .chart-btn:hover {
+        background: var(--accent-primary);
+        color: white;
+        border-color: var(--accent-primary);
+    }
+
+    .chart-wrapper {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .action-card {
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .action-card:hover {
+        background: var(--accent-primary);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .action-card:hover .action-icon,
+    .action-card:hover .quick-action-text {
+        color: white;
+    }
+
+    .action-icon {
+        font-size: 2em;
+        color: var(--accent-primary);
+        margin-bottom: 10px;
+        transition: color 0.3s ease;
+    }
+
+    .quick-action-text {
+        color: var(--text-primary);
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        body {
+            grid-template-columns: 80px 1fr;
         }
-   
         
-        .card_dash{
-          
-            gap: 30px;
-        }
-        .card_dash_chart h3{
-            font-family: 'Montserrat';
-            padding-top: 30px;
-        }
-    }
-    @media (max-width:725px){
-        main{
-            
-            
-            gap: 20px;
-        }
-        #myChart{
-           min-width: 380px;
-            height: 160px;
+        .logo {
+            width: 120px;
         }
         
-        .card_dash{
-            grid-area: initial ;
-            
+        .big_title {
+            font-size: 1.1em;
+        }
+        
+        .charts-container {
+            grid-template-columns: 1fr;
         }
 
-        .big_title{
-        visibility: hidden;
+        .quick-action-text{
+            font-weight: 400;
+        }
     }
-       
+
+    @media (max-width: 768px) {
+        body {
+            grid-template-columns: 1fr;
+            grid-template-rows: 60px auto 1fr;
+            grid-template-areas: 
+                "header"
+                "side"
+                "main";
+            height: auto;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            border-radius: 0;
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+        
+        .charts-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .chart-wrapper {
+            height: 250px;
+        }
+        
+        .logo {
+            width: 100px;
+        }
+        
+        .big_title {
+            font-size: 1em;
+        }
+        
+        main {
+            padding: 15px;
+            gap: 15px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+        }
     }
-     /* End of media */
-    
-     
+
+    @media (max-width: 480px) {
+        .chart-card {
+            padding: 15px;
+        }
+        
+        .chart-wrapper {
+            height: 200px;
+        }
+        
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+        
+        .dark-mode-toggle {
+            padding: 4px 10px;
+            font-size: 0.8em;
+        }
+        
+        .dark-mode-toggle span {
+            display: none;
+        }
+        
+        .dark-mode-toggle i {
+            margin: 0;
+        }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--accent-primary);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-secondary);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.6s ease;
+    }
+
+    /* Progress Scroll */
+    .scroll-progress {
+        height: 4px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+        width: 100%;
+        scale: 0 1;
+        transform-origin: left;
+        animation: scroll-progress linear;
+        animation-timeline: scroll();
+    }
+
+    @keyframes scroll-progress {
+        to { scale: 1 1; }
+    }
 </style>
-<body class="1000vh" >
-    <div class="scroll-w"></div>
+<body class="dark-mode">
+    <div class="scroll-progress"></div>
     
-       
-        <!-- sidebar include -->
-        <?php 
-            include('../HOME.PHP');
-        ?>
-        <!-- Page Content -->
-        <!---------------------------------------------- Header Code -->
-        <header class="header">
-            <div class="logo bg-transparen sidebar-heading   ">
-                        <img class="" src="../assets/IMAGES/fast-fit.png"  
-                        style="background:none;width: 100%; filter: drop-shadow(0px 0px 10px  white)"></div>
-                    <span class="big_title "><center><h1>Dashboard</h1></center></span>
-        </header>
-        <!----------------------------------------------End of Header Code -->
-        
-            
-        <main class="main text-center">
-            
-                        
-                        
-                    <div class="row mt-3">
-                        <div class="col-6">
-                            <div class="card_dash " >
-                                <div class="card-body">
-                                    <h2><i class="fa-solid fa-users"></i></h2>
-                                    
-                                
-                                        
-                                    <h1 class="card-title"><?=number_format($total_members)?></h1>
+    <!-- sidebar include -->
+    <?php include('../home.php'); ?>
 
-                                    <h6 class="card_dash-text">TOTAL Members</h6>
-                                    <span></span>
-                                </div>
-                            </div>
-                        </div>
+    <header class="header">
+        <div class="logo">
+            <img src="../assets/IMAGES/fast-fit.png" style="background:none;width: 100%; " alt="Fast Fit Gym Logo">
+        </div>
+        <span class="big_title"><h4>Dashboard Overview</h4></span>
+    </header>
+    
+    <main>
+        <!-- Stats Cards -->
+        <div class="stats-cards">
+            <div class="stat-card members fade-in">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="stat-number"><?= number_format($total_members) ?></div>
+                <div class="stat-label">Total Members</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12% from last month</span>
+                </div>
+            </div>
 
-                        <div class="col-6">
-                            <div class="card_dash " >
-                                <div class="card-body">
-                                    <h2><i class="fa fa-briefcase"></i></h2>
-                                    
-                                    <h1 class="card-title"><?=number_format($total_staff)?></h1>
+            <div class="stat-card staff fade-in">
+                <div class="stat-icon">
+                    <i class="fa fa-briefcase"></i>
+                </div>
+                <div class="stat-number"><?= number_format($total_staff) ?></div>
+                <div class="stat-label">Staff Members</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>5% from last month</span>
+                </div>
+            </div>
+        </div>
 
-                                    <h6 class="card_dash-text">TOTAL Staff Members</h6>
-                                    
-                                </div>
-                            </div>
-                        </div>
+        <!-- Charts Section -->
+        <div class="charts-container">
+            <div class="chart-card fade-in">
+                <div class="chart-header">
+                    <h3 class="chart-title">New Members Statistics</h3>
+                    <div class="chart-actions">
+                        <button class="chart-btn active" data-chart="members" data-type="monthly">Monthly</button>
+                        <button class="chart-btn" data-chart="members" data-type="yearly">Yearly</button>
                     </div>
-                    <div class="row mt-3 g-4">
-                        <div class="col-6 ">
-                            <div class="card_dash_chart" ><h3>Stastic of new members</h3>
-                            <canvas id="myChart" width="auto" height="auto"></canvas>
-                            </div>
-                        </div>
-                        <div class="col-6 h-100 py-3">
-                        <div class="card_dash_chart"><h3>Income</h3>
-                        <canvas id="income" width="auto" height="auto"></canvas>
-                        </div>
-                        </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="membersChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card fade-in">
+                <div class="chart-header">
+                    <h3 class="chart-title">Revenue Overview</h3>
+                    <div class="chart-actions">
+                        <button class="chart-btn active" data-chart="revenue" data-type="monthly">Monthly</button>
+                        <button class="chart-btn" data-chart="revenue" data-type="yearly">Yearly</button>
                     </div>
-        </main>
-     
-    <!-- jquery code -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.jsdelivr.com/package/npm/chart.js?path=dist"></script>
-        <script>
-        // new client statistic chart script
-        const Data = {
-                labels: <?= json_encode($labels) ?>,
-                datasets: [
-                    {
-                        label:'new member',
-                        borderColor: 'cyan',
-                        backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-card" onclick="window.location.href='members.php'">
+                <div class="action-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div class="quick-action-text">Add New Member</div>
+            </div>
+            <div class="action-card" onclick="window.location.href='staff.php'">
+                <div class="action-icon">
+                    <i class="fa-solid fa-briefcase"></i>
+                </div>
+                <div class="quick-action-text">Manage Staff</div>
+            </div>
+            <div class="action-card" onclick="window.location.href='classes.php'">
+                <div class="action-icon">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <div class="quick-action-text">View Classes</div>
+            </div>
+            <div class="action-card" onclick="window.location.href='plans.php'">
+                <div class="action-icon">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <div class="quick-action-text">plans</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Chart instances
+        let membersChart = null;
+        let revenueChart = null;
+
+        // Chart data
+        const chartData = {
+            members: {
+                monthly: {
+                    labels: <?= json_encode($monthly_labels) ?>,
+                    data: <?= json_encode($monthly_data) ?>
+                },
+                yearly: {
+                    labels: ['2020', '2021', '2022', '2023', '2024'],
+                    data: [120, 180, 240, 320, <?= $total_members ?>]
+                }
+            },
+            revenue: {
+                monthly: {
+                    labels: <?= json_encode($monthly_labels) ?>,
+                    data: <?= json_encode($revenue_data) ?>
+                },
+                yearly: {
+                    labels: ['2020', '2021', '2022', '2023', '2024'],
+                    data: [45000, 52000, 68000, 82000, 95000]
+                }
+            }
+        };
+
+        // Chart Colors based on theme
+        function getChartColors() {
+            const isLightMode = document.body.classList.contains('light-mode');
+            return {
+                primary: isLightMode ? '#667eea' : '#667eea',
+                secondary: isLightMode ? '#764ba2' : '#764ba2',
+                success: isLightMode ? '#28a745' : '#6cf856',
+                background: isLightMode ? '#ffffff' : '#2d3446',
+                border: isLightMode ? '#dee2e6' : '#3a4158',
+                text: isLightMode ? '#2d3446' : '#ffffff',
+                grid: isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+            };
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            const colors = getChartColors();
+            
+            // Destroy existing charts if they exist
+            if (membersChart) {
+                membersChart.destroy();
+            }
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+            
+            // Members Chart
+            const membersCtx = document.getElementById('membersChart').getContext('2d');
+            membersChart = new Chart(membersCtx, {
+                type: 'line',
+                data: {
+                    labels: chartData.members.monthly.labels,
+                    datasets: [{
+                        label: 'New Members',
+                        data: chartData.members.monthly.data,
+                        borderColor: colors.primary,
+                        backgroundColor: colors.primary + '20',
+                        borderWidth: 3,
                         fill: true,
-                        data : <?= json_encode($data) ?>,
-                    }, 
-                ],
-                };
-                const options1 = {
-                responsive: true,
-                
-                };
-
-                const new_mem = document.getElementById('myChart').getContext('2d');
-                const ctx = new Chart(new_mem, {
-                type: 'line',
-                data: Data,
-                options: options1,
-                });
-                // Income chart code
-            const data = {
-                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-                datasets: [
-                    {
-                    label: 'Membership Fees',
-                    data: [5000, 9000, 7500, 8000,5000 , 3000],
-                    borderColor: 'green',
-                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
-                    fill: true,
-                    },        
-                    
-                ],
-                };
-
-                const options = {
-                responsive: true,
-                title: {
-                    display: true,
-                    text: 'Gym Revenue by Source',
+                        tension: 0.4,
+                        pointBackgroundColor: colors.primary,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
                 },
-                scales: {
-                    yAxes: [{
-                    ticks: {
-                        beginAtZero: true,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { 
+                                color: colors.text,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: colors.background,
+                            titleColor: colors.text,
+                            bodyColor: colors.text,
+                            borderColor: colors.border,
+                            borderWidth: 1
+                        }
                     },
-                    }],
-                },
-                };
+                    scales: {
+                        x: {
+                            grid: { 
+                                color: colors.grid,
+                                drawBorder: false
+                            },
+                            ticks: { 
+                                color: colors.text,
+                                font: { size: 11 }
+                            }
+                        },
+                        y: {
+                            grid: { 
+                                color: colors.grid,
+                                drawBorder: false
+                            },
+                            ticks: { 
+                                color: colors.text,
+                                font: { size: 11 },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                }
+            });
 
-                const income = document.getElementById('income').getContext('2d');
-                const chart = new Chart(income, {
-                type: 'line',
-                data: data,
-                options: options,
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.revenue.monthly.labels,
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: chartData.revenue.monthly.data,
+                        backgroundColor: colors.secondary + '80',
+                        borderColor: colors.secondary,
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { 
+                                color: colors.text,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: colors.background,
+                            titleColor: colors.text,
+                            bodyColor: colors.text,
+                            borderColor: colors.border,
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { 
+                                color: colors.grid,
+                                drawBorder: false
+                            },
+                            ticks: { 
+                                color: colors.text,
+                                font: { size: 11 }
+                            }
+                        },
+                        y: {
+                            grid: { 
+                                color: colors.grid,
+                                drawBorder: false
+                            },
+                            ticks: { 
+                                color: colors.text,
+                                font: { size: 11 },
+                                beginAtZero: true,
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update charts when theme changes
+        function updateChartsForTheme() {
+            initializeCharts();
+        }
+
+        // Switch chart data type (monthly/yearly)
+        function switchChartType(chartName, type) {
+            if (chartName === 'members') {
+                membersChart.data.labels = chartData.members[type].labels;
+                membersChart.data.datasets[0].data = chartData.members[type].data;
+                membersChart.update();
+            } else if (chartName === 'revenue') {
+                revenueChart.data.labels = chartData.revenue[type].labels;
+                revenueChart.data.datasets[0].data = chartData.revenue[type].data;
+                revenueChart.update();
+            }
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            initializeCharts();
+
+            // Dark Mode Toggle
+            document.getElementById('darkModeToggle').addEventListener('click', function() {
+                document.body.classList.toggle('light-mode');
+                if (document.body.classList.contains('light-mode')) {
+                    this.innerHTML = '<i class="fas fa-moon me-2"></i><span>Dark Mode</span>';
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    this.innerHTML = '<i class="fas fa-sun me-2"></i><span>Light Mode</span>';
+                    localStorage.setItem('theme', 'dark');
+                }
+                updateChartsForTheme();
+            });
+
+            // Load saved theme
+            if (localStorage.getItem('theme') === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('darkModeToggle').innerHTML = '<i class="fas fa-moon me-2"></i><span>Dark Mode</span>';
+            }
+
+            // Chart type switcher
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const chart = this.dataset.chart;
+                    const type = this.dataset.type;
+                    
+                    // Update active state
+                    this.parentElement.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Switch chart data
+                    switchChartType(chart, type);
                 });
-        </script>
+            });
+
+            // Add loading animation to stats cards
+            const statsCards = document.querySelectorAll('.stat-card');
+            statsCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (membersChart) membersChart.resize();
+            if (revenueChart) revenueChart.resize();
+        });
+    </script>
 </body>
 </html>
